@@ -14,5 +14,5 @@ public interface IEventStoreRepository : IDisposable
     /// </summary>
     /// <param name="eventStores">The event stores to store.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task StoreAsync(IEnumerable<EventStore> eventStores);
+    Task StoreAsync(IEnumerable<EventStore_> eventStores);
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using EventStore.Client;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -10,8 +11,11 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using Shop.Core.AppSettings;
 using Shop.Core.Extensions;
+using Shop.Core.SharedKernel;
 using Shop.Infrastructure;
+using Shop.Infrastructure.Data;
 using Shop.Infrastructure.Data.Context;
+using Shop.Infrastructure.Data.EventStore;
 
 namespace Shop.PublicApi.Extensions;
 
@@ -75,6 +79,15 @@ internal static class ServicesCollectionExtensions
         }
 
         return services;
+    }
+
+    public static IServiceCollection AddEventStoreDbClientService(this IServiceCollection services, IConfiguration configuration)
+    {
+        var options = configuration.GetOptions<ConnectionOptions>();
+        var settings = EventStoreClientSettings.Create(options.EventStoreDbConnection);
+        var eventStoreClient = new EventStoreClient(settings);
+
+        return services.AddSingleton(eventStoreClient);
     }
 
     private static void ConfigureDbContext<TContext>(

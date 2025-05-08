@@ -9,12 +9,13 @@ using Microsoft.Extensions.Logging;
 using Shop.Core.Extensions;
 using Shop.Core.SharedKernel;
 using Shop.Infrastructure.Data.Context;
+using Shop.Infrastructure.Data.EventStore;
 
 namespace Shop.Infrastructure.Data;
 
 internal sealed class UnitOfWork(
     WriteDbContext writeDbContext,
-    IEventStoreRepository eventStoreRepository,
+    IEventStore eventStore,
     IMediator mediator,
     ILogger<UnitOfWork> logger) : IUnitOfWork
 {
@@ -29,14 +30,16 @@ internal sealed class UnitOfWork(
         // Executing the strategy.
         await strategy.ExecuteAsync(async () =>
         {
-            await using var transaction = await writeDbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+            await using var transaction =
+                await writeDbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
             logger.LogInformation("----- Begin transaction: '{TransactionId}'", transaction.TransactionId);
 
             try
             {
                 // Getting the domain events and event stores from the tracked entities in the EF Core context.
-                var (domainEvents, eventStores) = BeforeSaveChanges();
+                //var (domainEvents, eventStores) = BeforeSaveChanges();
+                var domainEvents = CollectDomainEvents();
 
                 var rowsAffected = await writeDbContext.SaveChangesAsync();
 
@@ -45,7 +48,8 @@ internal sealed class UnitOfWork(
                 await transaction.CommitAsync();
 
                 // Triggering the events and saving the stores.
-                await AfterSaveChangesAsync(domainEvents, eventStores);
+                //await AfterSaveChangesAsync(domainEvents, eventStores);
+                await PublishAndPersistAsync(domainEvents);
 
                 logger.LogInformation(
                     "----- Transaction successfully confirmed: '{TransactionId}', Rows Affected: {RowsAffected}",
@@ -71,7 +75,8 @@ internal sealed class UnitOfWork(
     /// Executes logic before saving changes to the database.
     /// </summary>
     /// <returns>A tuple containing the list of domain events and event stores.</returns>
-    private (IReadOnlyList<BaseEvent> domainEvents, IReadOnlyList<EventStore> eventStores) BeforeSaveChanges()
+    //private (IReadOnlyList<BaseEvent> domainEvents, IReadOnlyList<EventStore_> eventStores) BeforeSaveChanges()
+    private IReadOnlyList<BaseEvent> CollectDomainEvents()
     {
         // Get all domain entities with pending domain events
         var domainEntities = writeDbContext
@@ -87,31 +92,32 @@ internal sealed class UnitOfWork(
 
         // Convert domain events to event stores
         var eventStores = domainEvents
-            .ConvertAll(@event => new EventStore(@event.AggregateId, @event.GetGenericTypeName(), @event.ToJson()));
+            .ConvertAll(@event => new EventStore_(@event.AggregateId, @event.GetGenericTypeName(), @event.ToJson()));
 
         // Clear domain events from the entities
         domainEntities.ForEach(entry => entry.Entity.ClearDomainEvents());
 
-        return (domainEvents.AsReadOnly(), eventStores.AsReadOnly());
+        //return (domainEvents.AsReadOnly(), eventStores.AsReadOnly());
+        return domainEvents.AsReadOnly();
     }
 
     /// <summary>
     /// Performs necessary actions after saving changes, such as publishing domain events and storing event stores.
     /// </summary>
     /// <param name="domainEvents">The list of domain events.</param>
-    /// <param name="eventStores">The list of event stores.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task AfterSaveChangesAsync(
-        IReadOnlyList<BaseEvent> domainEvents,
-        IReadOnlyList<EventStore> eventStores)
+    //private async Task AfterSaveChangesAsync(IReadOnlyList<BaseEvent> domainEvents, IReadOnlyList<EventStore_> eventStores)
+    private async Task PublishAndPersistAsync(IReadOnlyList<BaseEvent> domainEvents)
     {
         // Publish each domain event using _mediator.
         if (domainEvents.Count > 0)
             await Task.WhenAll(domainEvents.Select(@event => mediator.Publish(@event)));
 
-        // Store the event stores using _eventStoreRepository.
-        if (eventStores.Count > 0)
-            await eventStoreRepository.StoreAsync(eventStores);
+        // 2. Persist to EventStoreDB – группируем по AggregateId
+        foreach (var grp in domainEvents.GroupBy(e => e.AggregateId))
+        {
+            await eventStore.SaveEventsAsync(grp.Key, grp);
+        }
     }
 
     #region IDisposable
@@ -139,7 +145,7 @@ internal sealed class UnitOfWork(
         if (disposing)
         {
             writeDbContext.Dispose();
-            eventStoreRepository.Dispose();
+            //eventStoreRepository.Dispose();
         }
 
         _disposed = true;

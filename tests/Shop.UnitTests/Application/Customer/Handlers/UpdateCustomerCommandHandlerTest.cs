@@ -11,6 +11,7 @@ using Shop.Core.SharedKernel;
 using Shop.Domain.Entities.CustomerAggregate;
 using Shop.Domain.Factories;
 using Shop.Infrastructure.Data;
+using Shop.Infrastructure.Data.EventStore;
 using Shop.Infrastructure.Data.Repositories;
 using Shop.UnitTests.Fixtures;
 using Xunit;
@@ -44,7 +45,7 @@ public class UpdateCustomerCommandHandlerTest(EfSqliteFixture fixture) : IClassF
 
         var unitOfWork = new UnitOfWork(
             fixture.Context,
-            Substitute.For<IEventStoreRepository>(),
+            Substitute.For<IEventStore>(),
             Substitute.For<IMediator>(),
             Substitute.For<ILogger<UnitOfWork>>());
 

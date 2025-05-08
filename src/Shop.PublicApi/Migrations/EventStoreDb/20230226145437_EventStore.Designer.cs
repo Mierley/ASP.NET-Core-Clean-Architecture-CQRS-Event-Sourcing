@@ -24,7 +24,7 @@ namespace Shop.PublicApi.Migrations.EventStoreDb
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Shop.Core.Events.EventStore", b =>
+            modelBuilder.Entity("Shop.Core.Events.EventStore_", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");

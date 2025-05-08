@@ -19,6 +19,7 @@
     <PackageVersion Include="CorrelationId" Version="3.0.*" />
     <PackageVersion Include="coverlet.collector" Version="6.0.*" />
     <PackageVersion Include="coverlet.msbuild" Version="6.0.*" />
+    <PackageVersion Include="EventStore.Client.Grpc.Streams" Version="23.3.8" />
     <PackageVersion Include="FluentAssertions" Version="7.1.0" />
     <PackageVersion Include="FluentValidation" Version="11.11.*" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.*" />

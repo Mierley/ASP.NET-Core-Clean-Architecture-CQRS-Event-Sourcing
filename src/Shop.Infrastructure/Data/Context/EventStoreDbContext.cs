@@ -7,7 +7,7 @@ namespace Shop.Infrastructure.Data.Context;
 public class EventStoreDbContext(DbContextOptions<EventStoreDbContext> dbOptions)
     : BaseDbContext<EventStoreDbContext>(dbOptions)
 {
-    public DbSet<EventStore> EventStores => Set<EventStore>();
+    public DbSet<EventStore_> EventStores => Set<EventStore_>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -17,6 +17,9 @@ public sealed class ConnectionOptions : IAppOptions
     [Required]
     public string CacheConnection { get; private init; }
 
+    [Required]
+    public string EventStoreDbConnection { get; private init; }
+
     public bool CacheConnectionInMemory() =>
         CacheConnection.Equals("InMemory", StringComparison.InvariantCultureIgnoreCase);
 }

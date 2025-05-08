@@ -8,7 +8,7 @@ namespace Shop.Infrastructure.Data.Repositories;
 
 internal sealed class EventStoreRepository(EventStoreDbContext context) : IEventStoreRepository
 {
-    public async Task StoreAsync(IEnumerable<EventStore> eventStores)
+    public async Task StoreAsync(IEnumerable<EventStore_> eventStores)
     {
         await context.EventStores.AddRangeAsync(eventStores);
         await context.SaveChangesAsync();
