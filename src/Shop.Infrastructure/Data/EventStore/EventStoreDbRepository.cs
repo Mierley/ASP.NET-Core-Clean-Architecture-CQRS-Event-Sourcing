@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using EventStore.Client;
@@ -23,7 +24,7 @@ public class EventStoreDbRepository : IEventStore
         // Подготавливаем данные событий для сохранения
         var eventDataBatch = events.Select(@event =>
         {
-            var eventJson = JsonSerializer.SerializeToUtf8Bytes(@event);
+            var eventJson = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType());
             var eventType = @event.GetType().Name;
             return new EventData(Uuid.NewUuid(), eventType, eventJson);
         });
@@ -68,8 +69,10 @@ public class EventStoreDbRepository : IEventStore
     {
         // Пример: по имени типа события восстанавливаем тип .NET
         // Допустим, у нас есть словарь eventTypeName -> Type или переключатель if/else
-        // Для простоты: eventType совпадает с именем класса события
-        Type type = Type.GetType($"MyProject.Domain.Events.{eventType}");
+        // Для простоты: eventType совпадает с именем класса событ
+        var type = AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly => assembly.GetTypes())
+            .FirstOrDefault(x => x.Name.Contains(eventType));
+
         if (type == null) throw new InvalidOperationException($"Unknown event type: {eventType}");
         var json = System.Text.Encoding.UTF8.GetString(data);
         return (BaseEvent)JsonSerializer.Deserialize(json, type);

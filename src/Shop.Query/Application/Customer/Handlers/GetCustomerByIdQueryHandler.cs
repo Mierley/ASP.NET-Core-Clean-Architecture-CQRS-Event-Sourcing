@@ -13,8 +13,7 @@ namespace Shop.Query.Application.Customer.Handlers;
 
 public class GetCustomerByIdQueryHandler(
     IValidator<GetCustomerByIdQuery> validator,
-    ICustomerReadOnlyRepository repository,
-    ICacheService cacheService) : IRequestHandler<GetCustomerByIdQuery, Result<CustomerQueryModel>>
+    ICustomerReadOnlyRepository repository) : IRequestHandler<GetCustomerByIdQuery, Result<CustomerQueryModel>>
 {
     public async Task<Result<CustomerQueryModel>> Handle(
         GetCustomerByIdQuery request,
@@ -28,7 +27,10 @@ public class GetCustomerByIdQueryHandler(
             return Result<CustomerQueryModel>.Invalid(validationResult.AsErrors());
         }
 
-        // Creating a cache key using the query name and the customer ID.
+        return await repository.GetByIdAsync(request.Id);
+
+
+        /*// Creating a cache key using the query name and the customer ID.
         var cacheKey = $"{nameof(GetCustomerByIdQuery)}_{request.Id}";
 
         // Getting the customer from the cache service. If not found, fetches it from the repository.
@@ -39,6 +41,6 @@ public class GetCustomerByIdQueryHandler(
         // Otherwise, returns a successful result with the customer.
         return customer == null
             ? Result<CustomerQueryModel>.NotFound($"No customer found by Id: {request.Id}")
-            : Result<CustomerQueryModel>.Success(customer);
+            : Result<CustomerQueryModel>.Success(customer);*/
     }
 }

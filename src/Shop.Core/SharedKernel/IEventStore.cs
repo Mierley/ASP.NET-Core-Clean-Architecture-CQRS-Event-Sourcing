@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Shop.Core.SharedKernel;
 
-namespace Shop.Infrastructure.Data.EventStore;
+namespace Shop.Core.SharedKernel;
 
 public interface IEventStore
 {

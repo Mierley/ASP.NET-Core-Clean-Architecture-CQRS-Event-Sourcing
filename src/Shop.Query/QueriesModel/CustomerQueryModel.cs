@@ -1,4 +1,5 @@
 using System;
+using Shop.Domain.Entities.CustomerAggregate;
 using Shop.Query.Abstractions;
 
 namespace Shop.Query.QueriesModel;
@@ -19,6 +20,16 @@ public class CustomerQueryModel : IQueryModel<Guid>
         Gender = gender;
         Email = email;
         DateOfBirth = dateOfBirth;
+    }
+
+    public CustomerQueryModel(Guid customerId, Customer customer)
+    {
+        Id = customerId;
+        FirstName = customer.FirstName;
+        LastName = customer.LastName;
+        Gender = customer.Gender.ToString();
+        Email = customer.Email.ToString();
+        DateOfBirth = customer.DateOfBirth;
     }
 
     private CustomerQueryModel()

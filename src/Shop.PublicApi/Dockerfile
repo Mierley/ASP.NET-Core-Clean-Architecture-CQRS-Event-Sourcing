@@ -24,10 +24,10 @@ COPY ["src/Shop.Query/Shop.Query.csproj", "src/Shop.Query/"]
 RUN dotnet restore "src/Shop.PublicApi/Shop.PublicApi.csproj"
 COPY . .
 WORKDIR "/src/src/Shop.PublicApi"
-RUN dotnet build "Shop.PublicApi.csproj" --configuration Release --no-restore --nologo --output /app/build 
+RUN dotnet build "Shop.PublicApi.csproj" --configuration Debug --no-restore --nologo --output /app/build 
 
 FROM build AS publish
-RUN dotnet publish "Shop.PublicApi.csproj" --configuration Release --no-restore --nologo --output /app/publish
+RUN dotnet publish "Shop.PublicApi.csproj" --configuration Debug --no-restore --nologo --output /app/publish
 
 FROM base AS final
 WORKDIR /app

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Shop.Core.SharedKernel;
 using Shop.Domain.Entities.CustomerAggregate.Events;
 using Shop.Domain.ValueObjects;
@@ -39,17 +40,17 @@ public class Customer : BaseEntity, IAggregateRoot
     /// <summary>
     /// Gets the first name of the customer.
     /// </summary>
-    public string FirstName { get; }
+    public string FirstName { get; private set; }
 
     /// <summary>
     /// Gets the last name of the customer.
     /// </summary>
-    public string LastName { get; }
+    public string LastName { get; private set; }
 
     /// <summary>
     /// Gets the gender of the customer.
     /// </summary>
-    public EGender Gender { get; }
+    public EGender Gender { get; private set; }
 
     /// <summary>
     /// Gets or sets the email address of the customer.
@@ -59,30 +60,58 @@ public class Customer : BaseEntity, IAggregateRoot
     /// <summary>
     /// Gets the date of birth of the customer.
     /// </summary>
-    public DateTime DateOfBirth { get; }
+    public DateTime DateOfBirth { get; private set; }
 
     /// <summary>
     /// Changes the email address of the customer.
     /// </summary>
     /// <param name="newEmail">The new email address.</param>
-    public void ChangeEmail(Email newEmail)
+    public void ChangeEmail(Email newEmail, bool withEvent = true)
     {
         if (Email.Equals(newEmail))
             return;
 
         Email = newEmail;
-
-        AddDomainEvent(new CustomerUpdatedEvent(Id, FirstName, LastName, Gender, newEmail.Address, DateOfBirth));
+        if (withEvent)
+            AddDomainEvent(new CustomerUpdatedEvent(Id, FirstName, LastName, Gender, newEmail.Address, DateOfBirth));
     }
 
     /// <summary>
     /// Deletes the customer.
     /// </summary>
-    public void Delete()
+    public void Delete(bool withEvent = true)
     {
         if (_isDeleted) return;
 
         _isDeleted = true;
-        AddDomainEvent(new CustomerDeletedEvent(Id, FirstName, LastName, Gender, Email.Address, DateOfBirth));
+
+        if (withEvent)
+            AddDomainEvent(new CustomerDeletedEvent(Id, FirstName, LastName, Gender, Email.Address, DateOfBirth));
+    }
+    public void Replay(IEnumerable<BaseEvent> events)
+    {
+        foreach (var e in events) When(e);        // (если Version нужен)
+    }
+
+    private void When(BaseEvent e)
+    {
+        switch (e)
+        {
+            case CustomerCreatedEvent ev:
+                this.FirstName = ev.FirstName;
+                this.LastName = ev.LastName;
+                this.Gender = ev.Gender;
+                this.Email = Email.Create(ev.Email);
+                this.DateOfBirth = ev.DateOfBirth;
+                break;
+
+            case CustomerDeletedEvent ev:
+                Delete(false);
+                break;
+
+            case CustomerUpdatedEvent ev:
+                ChangeEmail(Email.Create(ev.Email), false);
+                break;
+        }
     }
 }
