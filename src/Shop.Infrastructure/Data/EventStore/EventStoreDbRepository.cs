@@ -37,15 +37,29 @@ public class EventStoreDbRepository : IEventStore
     }
 
     /// <summary>
-    /// считывает все события потока с начала
+    /// Загружает из EventStoreDB события агрегата, чья версия > afterVersion.
+    /// ∙ Если afterVersion = -1 (значение по умолчанию) — читаем с начала потока.
+    /// ∙ Возвращает IEnumerbale<BaseEvent>, отсортированное по возрастанию версии.
     /// </summary>
-    /// <param name="aggregateId"></param>
-    /// <param name="streamName"></param>
-    /// <returns></returns>
-    public async Task<IEnumerable<BaseEvent>> LoadEventsAsync(Guid aggregateId, string streamName = null)
+    public async Task<IEnumerable<BaseEvent>> LoadEventsAsync(
+        Guid aggregateId,
+        long afterVersion = -1, //  -1 ⇒ с самого начала
+        string streamName = null)
     {
         string stream = streamName ?? GetStreamName(aggregateId);
-        var result = _client.ReadStreamAsync(Direction.Forwards, stream, StreamPosition.Start);
+
+        // EventStoreDB нумерует события с 0.
+        // Хотим получить события СТРОГО > afterVersion  ⇒  начинаем с afterVersion+1
+        long startPosition = afterVersion < 0
+            ? 0
+            : (afterVersion + 1);
+
+        // читаем поток вперёд, начиная с calculated position
+        var result = _client.ReadStreamAsync(
+            Direction.Forwards,
+            stream,
+            StreamPosition.FromInt64(startPosition));
+
         var events = new List<BaseEvent>();
         await foreach (var resolvedEvent in result)
         {

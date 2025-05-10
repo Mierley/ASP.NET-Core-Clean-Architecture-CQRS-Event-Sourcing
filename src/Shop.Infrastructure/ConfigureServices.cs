@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using EventStore.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Shop.Core.SharedKernel;
+using Shop.Domain;
 using Shop.Domain.Entities.CustomerAggregate;
 using Shop.Infrastructure.Data;
 using Shop.Infrastructure.Data.Context;
@@ -51,5 +52,6 @@ public static class ConfigureServices
     public static IServiceCollection AddWriteOnlyRepositories(this IServiceCollection services) =>
          services
             .AddScoped<IEventStoreRepository, EventStoreRepository>()
+            .AddSingleton<ISnapshotRepository, SnapshotRepository>()
             .AddScoped<ICustomerWriteOnlyRepository, CustomerWriteOnlyRepository>();
 }

@@ -8,17 +8,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shop.Core.Extensions;
 using Shop.Core.SharedKernel;
+using Shop.Domain;
 using Shop.Infrastructure.Data.Context;
-using Shop.Infrastructure.Data.EventStore;
 
 namespace Shop.Infrastructure.Data;
 
 internal sealed class UnitOfWork(
     WriteDbContext writeDbContext,
     IEventStore eventStore,
+    ISnapshotRepository snapshotRepository,
     IMediator mediator,
     ILogger<UnitOfWork> logger) : IUnitOfWork
 {
+
     /// <summary>
     /// Saves changes asynchronously.
     /// </summary>
@@ -41,7 +43,7 @@ internal sealed class UnitOfWork(
                 //var (domainEvents, eventStores) = BeforeSaveChanges();
                 var domainEvents = CollectDomainEvents();
 
-                var rowsAffected = await writeDbContext.SaveChangesAsync();
+                //var rowsAffected = await writeDbContext.SaveChangesAsync();
 
                 logger.LogInformation("----- Commit transaction: '{TransactionId}'", transaction.TransactionId);
 
@@ -54,7 +56,7 @@ internal sealed class UnitOfWork(
                 logger.LogInformation(
                     "----- Transaction successfully confirmed: '{TransactionId}', Rows Affected: {RowsAffected}",
                     transaction.TransactionId,
-                    rowsAffected);
+                    0);
             }
             catch (Exception ex)
             {
@@ -117,6 +119,10 @@ internal sealed class UnitOfWork(
         foreach (var grp in domainEvents.GroupBy(e => e.AggregateId))
         {
             await eventStore.SaveEventsAsync(grp.Key, grp);
+
+            if(grp.LastOrDefault().Version % 5 == 0)
+                snapshotRepository.SaveSnapshotsAsync(domainEvents);
+
         }
     }
 

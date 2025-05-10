@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Shop.Core.SharedKernel;
 using Shop.Domain.Entities.CustomerAggregate.Events;
 using Shop.Domain.ValueObjects;
@@ -26,7 +27,7 @@ public class Customer : BaseEntity, IAggregateRoot
         Email = email;
         DateOfBirth = dateOfBirth;
 
-        AddDomainEvent(new CustomerCreatedEvent(Id, firstName, lastName, gender, email.Address, dateOfBirth));
+        AddDomainEvent(new CustomerCreatedEvent(Id, Version, firstName, lastName, gender, email.Address, dateOfBirth));
     }
 
     /// <summary>
@@ -73,7 +74,7 @@ public class Customer : BaseEntity, IAggregateRoot
 
         Email = newEmail;
         if (withEvent)
-            AddDomainEvent(new CustomerUpdatedEvent(Id, FirstName, LastName, Gender, newEmail.Address, DateOfBirth));
+            AddDomainEvent(new CustomerUpdatedEvent(Id, Version, FirstName, LastName, Gender, newEmail.Address, DateOfBirth));
     }
 
     /// <summary>
@@ -86,10 +87,11 @@ public class Customer : BaseEntity, IAggregateRoot
         _isDeleted = true;
 
         if (withEvent)
-            AddDomainEvent(new CustomerDeletedEvent(Id, FirstName, LastName, Gender, Email.Address, DateOfBirth));
+            AddDomainEvent(new CustomerDeletedEvent(Id, Version, FirstName, LastName, Gender, Email.Address, DateOfBirth));
     }
     public void Replay(IEnumerable<BaseEvent> events)
     {
+        events = events.ToList().OrderBy(baseEvent => baseEvent.Version);
         foreach (var e in events) When(e);        // (если Version нужен)
     }
 
@@ -103,6 +105,7 @@ public class Customer : BaseEntity, IAggregateRoot
                 this.Gender = ev.Gender;
                 this.Email = Email.Create(ev.Email);
                 this.DateOfBirth = ev.DateOfBirth;
+                this.Version = ev.Version;
                 break;
 
             case CustomerDeletedEvent ev:

@@ -8,5 +8,7 @@ public interface IEventStore
 {
     public Task SaveEventsAsync(Guid aggregateId, IEnumerable<BaseEvent> events, string streamName = null);
 
-    public Task<IEnumerable<BaseEvent>> LoadEventsAsync(Guid aggregateId, string streamName = null);
+    public Task<IEnumerable<BaseEvent>> LoadEventsAsync(Guid aggregateId,
+        long afterVersion = -1,
+        string streamName = null);
 }

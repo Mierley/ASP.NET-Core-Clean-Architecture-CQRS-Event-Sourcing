@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using MongoDB.Driver;
 using Shop.Core.SharedKernel;
+using Shop.Domain;
 using Shop.Domain.Entities.CustomerAggregate;
 using Shop.Query.Abstractions;
 using Shop.Query.Data.Repositories.Abstractions;
@@ -12,7 +13,7 @@ using Shop.Query.QueriesModel;
 
 namespace Shop.Query.Data.Repositories;
 
-internal class CustomerReadOnlyRepository(IReadDbContext readDbContext, IEventStore eventStore)
+internal class CustomerReadOnlyRepository(IReadDbContext readDbContext, IEventStore eventStore, ISnapshotRepository snapshotRepository)
     : BaseReadOnlyRepository<CustomerQueryModel, Guid>(readDbContext), ICustomerReadOnlyRepository
 {
     public async Task<IEnumerable<CustomerQueryModel>> GetAllAsync()
@@ -32,7 +33,10 @@ internal class CustomerReadOnlyRepository(IReadDbContext readDbContext, IEventSt
 
     public new async Task<CustomerQueryModel> GetByIdAsync(Guid customerId)
     {
-        var events = (await eventStore.LoadEventsAsync(customerId)).ToList();
+        var snapshot = snapshotRepository.GetLastSnapshot(customerId);
+        var lastVersion = snapshot?.Version ?? 0;
+
+        var events = (await eventStore.LoadEventsAsync(customerId, lastVersion)).ToList();
 
         if (events.Count == 0) return null;
 

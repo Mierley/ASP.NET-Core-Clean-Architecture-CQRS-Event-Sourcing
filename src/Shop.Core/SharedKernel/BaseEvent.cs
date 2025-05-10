@@ -22,4 +22,6 @@ public abstract class BaseEvent : INotification
     /// Gets the date and time when the event occurred.
     /// </summary>
     public DateTime OccurredOn { get; private init; } = DateTime.Now;
+
+    public int Version { get; protected init; } = 0;
 }
