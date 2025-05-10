@@ -40,7 +40,7 @@ internal class CustomerReadOnlyRepository(IReadDbContext readDbContext, IEventSt
 
         if (events.Count == 0) return null;
 
-        var customer = new Customer();                 // пустой экземпляр
+        var customer = snapshot ?? new Customer();                 // пустой экземпляр
         customer.Replay(events);              // восстанавливаем состояние
         return new CustomerQueryModel(events[0].AggregateId, customer);
     }
