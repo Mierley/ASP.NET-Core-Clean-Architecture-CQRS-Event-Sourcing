@@ -1,62 +1,84 @@
 ﻿using System.Net.Http.Json;
 
+/// dotnet run -- 200          ← создаст 200 клиентов * 100 модификаций = 20 200 событий
 internal class Program
 {
-    /// <summary>
-    ///  dotnet run -- 1000  ↔  создаст 1000 клиентов.
-    ///  Переменная окружения CUSTOMER_API задаёт базовый URL (по умолчанию http://localhost:5000).
-    /// </summary>
+    private const int UpdatesPerCustomer = 100; // ← сколько UPDATE‑событий
+
     private static async Task Main(string[] args)
     {
         int count = args.Length > 0 && int.TryParse(args[0], out var n) ? n : 500;
-        string baseUrl = //Environment.GetEnvironmentVariable("CUSTOMER_API") ??
-            "http://localhost:58413";
+        string baseUrl = Environment.GetEnvironmentVariable("CUSTOMER_API")
+                         ?? "http://localhost:80";
 
         using var client = new HttpClient {BaseAddress = new Uri(baseUrl)};
 
-        Console.WriteLine($"Seeding {count} customers to {baseUrl}/api/customers …");
+        Console.WriteLine(
+            $"Seeding {count} customers (each +{UpdatesPerCustomer} updates) to {baseUrl}/api/customers …");
 
         for (int i = 0; i < count; i++)
         {
-            var dto = new
+            // ---------- 1. CREATE ----------
+            var createDto = new
             {
                 firstName = $"Name{i}",
                 lastName = $"Test{i}",
                 gender = "None",
-                email = $"u{i}_{Guid.NewGuid():N}@example.com", // гарантированно уникальный
+                email = $"u{i}_{Guid.NewGuid():N}@example.com",
                 dateOfBirth = "1990-01-01"
             };
 
-            HttpResponseMessage response = await client.PostAsJsonAsync("/api/customers", dto);
+            HttpResponseMessage createResp =
+                await client.PostAsJsonAsync("/api/customers", createDto);
 
-            if (response.IsSuccessStatusCode)
+            if (!createResp.IsSuccessStatusCode)
             {
-                // ① читаем JSON {"id":"..."}
-                var created = await response.Content.ReadFromJsonAsync<CreatedDto>();
-                // ② пишем в CSV: id,len
-                if (created == null)
-                {
-                    Console.WriteLine($"[{i + 1}/{count}] ERR –  {(int)response.StatusCode} but without result");
-                    continue;
-                }
-                await File.AppendAllTextAsync("customers.csv",
-                 $"{created.Result.Id},0{Environment.NewLine}"); // len пока 0, обновите при надобности
-                Console.WriteLine($"[{i + 1}/{count}] OK  –  {created.Result.Id} {dto.email}");
+                Console.WriteLine($"[{i + 1}/{count}] CREATE ERR – HTTP {(int)createResp.StatusCode}");
+                continue; // переходим к следующему клиенту
             }
-            else
-                Console.WriteLine(
-                    $"[{i + 1}/{count}] ERR –  {(int)response.StatusCode} {await response.Content.ReadAsStringAsync()}");
+
+            var created = await createResp.Content.ReadFromJsonAsync<CreatedDto>();
+            if (created?.Result is null)
+            {
+                Console.WriteLine($"[{i + 1}/{count}] CREATE ERR – пустое тело");
+                continue;
+            }
+
+            Guid customerId = created.Result.Id;
+
+            // сохраним CustomerId в CSV (len = 1 + UpdatesPerCustomer)
+            await File.AppendAllTextAsync("customers.csv",
+                $"{customerId},{1 + UpdatesPerCustomer}{Environment.NewLine}");
+
+            Console.WriteLine($"[{i + 1}/{count}] CREATE OK – {customerId}");
+
+            // ---------- 2. 100 UPDATE‑событий ----------
+            for (int u = 1; u <= UpdatesPerCustomer; u++)
+            {
+                var updateDto = new {id = customerId, email = $"{customerId}_v{u}@example.com"};
+
+                HttpResponseMessage updateResp =
+                    await client.PutAsJsonAsync("/api/customers", updateDto);
+
+                if (!updateResp.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"    ↳ UPDATE {u}/{UpdatesPerCustomer} ERR – HTTP {(int)updateResp.StatusCode}");
+                    // при необходимости break; но лучше попытаться остальные
+                }
+            }
         }
 
         Console.WriteLine("Done.");
     }
 
+
+    // ----- модели ответа ----------------------------------------------------
     public record CreatedDto
     {
-        public ResultDto Result      { get; init; } = default!;
-        public bool      Success     { get; init; }
-        public int       StatusCode  { get; init; }
-        public string[]  Errors      { get; init; } = Array.Empty<string>();
+        public ResultDto Result { get; init; } = default!;
+        public bool Success { get; init; }
+        public int StatusCode { get; init; }
+        public string[] Errors { get; init; } = Array.Empty<string>();
     }
 
     public record ResultDto
