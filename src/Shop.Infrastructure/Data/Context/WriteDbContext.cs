@@ -4,9 +4,16 @@ using Shop.Infrastructure.Data.Mappings;
 
 namespace Shop.Infrastructure.Data.Context;
 
-public class WriteDbContext(DbContextOptions<WriteDbContext> dbOptions)
-    : BaseDbContext<WriteDbContext>(dbOptions)
+public class WriteDbContext : BaseDbContext<WriteDbContext>
 {
+    public WriteDbContext() : base()
+    {
+    }
+
+    public WriteDbContext(DbContextOptions<WriteDbContext> dbOptions) : base(dbOptions)
+    {
+    }
+
     public DbSet<Customer> Customers => Set<Customer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

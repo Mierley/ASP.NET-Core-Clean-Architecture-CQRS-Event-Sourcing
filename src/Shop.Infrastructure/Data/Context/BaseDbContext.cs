@@ -4,9 +4,18 @@ using Shop.Infrastructure.Data.Extensions;
 
 namespace Shop.Infrastructure.Data.Context;
 
-public abstract class BaseDbContext<TContext>(DbContextOptions<TContext> dbOptions) : DbContext(dbOptions)
+public abstract class BaseDbContext<TContext> : DbContext
     where TContext : DbContext
 {
+
+    protected BaseDbContext()
+    {
+    }
+
+    protected BaseDbContext(DbContextOptions<TContext> dbOptions) : base(dbOptions)
+    {
+    }
+
     private const string Collation = "Latin1_General_CI_AI";
 
     public override ChangeTracker ChangeTracker
