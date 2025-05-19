@@ -25,7 +25,7 @@ internal abstract class BaseReadOnlyRepository<TQueryModel, Tkey>(IReadDbContext
     /// </summary>
     /// <param name="id">The id of the query model.</param>
     /// <returns>The query model.</returns>
-    public async Task<TQueryModel> GetByIdAsync(Tkey id)
+    public virtual async Task<TQueryModel> GetByIdAsync(Tkey id)
     {
         using var asyncCursor = await Collection.FindAsync(queryModel => queryModel.Id.Equals(id));
         return await asyncCursor.FirstOrDefaultAsync();

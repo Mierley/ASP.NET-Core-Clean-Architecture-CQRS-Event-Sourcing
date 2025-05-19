@@ -12,7 +12,7 @@ using Shop.Query.QueriesModel;
 
 namespace Shop.Query.Data.Repositories;
 
-internal class CustomerReadOnlyRepository(IReadDbContext readDbContext, IEventStore eventStore)
+internal class MiraCustomerReadOnlyRepository(IReadDbContext readDbContext, IEventStore eventStore)
     : BaseReadOnlyRepository<CustomerQueryModel, Guid>(readDbContext), ICustomerReadOnlyRepository
 {
     public async Task<IEnumerable<CustomerQueryModel>> GetAllAsync()
@@ -30,7 +30,7 @@ internal class CustomerReadOnlyRepository(IReadDbContext readDbContext, IEventSt
         return await asyncCursor.ToListAsync();
     }
 
-    public new async Task<CustomerQueryModel> GetByIdAsync(Guid customerId)
+    public override async Task<CustomerQueryModel> GetByIdAsync(Guid customerId)
     {
         var events = (await eventStore.LoadEventsAsync(customerId)).ToList();
 
