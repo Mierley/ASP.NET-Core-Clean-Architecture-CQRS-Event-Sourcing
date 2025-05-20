@@ -60,27 +60,6 @@ internal static class ServicesCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddCacheService(this IServiceCollection services, IConfiguration configuration)
-    {
-        var options = configuration.GetOptions<ConnectionOptions>();
-        if (options.CacheConnectionInMemory())
-        {
-            services.AddMemoryCacheService();
-            services.AddMemoryCache(memoryOptions => memoryOptions.TrackStatistics = true);
-        }
-        else
-        {
-            services.AddDistributedCacheService();
-            services.AddStackExchangeRedisCache(redisOptions =>
-            {
-                redisOptions.InstanceName = RedisInstanceName;
-                redisOptions.Configuration = options.CacheConnection;
-            });
-        }
-
-        return services;
-    }
-
     public static IServiceCollection AddEventStoreDbClientService(this IServiceCollection services, IConfiguration configuration)
     {
         var options = configuration.GetOptions<ConnectionOptions>();

@@ -15,7 +15,6 @@ namespace Shop.Query.EventHandlers;
 public class CustomerEventHandler(
     IMapper mapper,
     ISynchronizeDb synchronizeDb,
-    ICacheService cacheService,
     ILogger<CustomerEventHandler> logger) :
     INotificationHandler<CustomerCreatedEvent>,
     INotificationHandler<CustomerUpdatedEvent>,
@@ -27,7 +26,7 @@ public class CustomerEventHandler(
 
         var customerQueryModel = mapper.Map<CustomerQueryModel>(notification);
         await synchronizeDb.UpsertAsync(customerQueryModel, filter => filter.Id == customerQueryModel.Id);
-        await ClearCacheAsync(notification);
+        //await ClearCacheAsync(notification);
     }
 
     public async Task Handle(CustomerDeletedEvent notification, CancellationToken cancellationToken)
@@ -35,7 +34,7 @@ public class CustomerEventHandler(
         LogEvent(notification);
 
         await synchronizeDb.DeleteAsync<CustomerQueryModel>(filter => filter.Email == notification.Email);
-        await ClearCacheAsync(notification);
+        //await ClearCacheAsync(notification);
     }
 
     public async Task Handle(CustomerUpdatedEvent notification, CancellationToken cancellationToken)
@@ -44,13 +43,6 @@ public class CustomerEventHandler(
 
         var customerQueryModel = mapper.Map<CustomerQueryModel>(notification);
         await synchronizeDb.UpsertAsync(customerQueryModel, filter => filter.Id == customerQueryModel.Id);
-        await ClearCacheAsync(notification);
-    }
-
-    private async Task ClearCacheAsync(CustomerBaseEvent @event)
-    {
-        var cacheKeys = new[] { nameof(GetAllCustomerQuery), $"{nameof(GetCustomerByIdQuery)}_{@event.Id}" };
-        await cacheService.RemoveAsync(cacheKeys);
     }
 
     private void LogEvent<TEvent>(TEvent @event) where TEvent : CustomerBaseEvent =>
