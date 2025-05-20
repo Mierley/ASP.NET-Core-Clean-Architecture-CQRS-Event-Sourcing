@@ -30,7 +30,7 @@ public abstract class BaseEntity : IEntity<Guid>
     /// <summary>
     /// Gets the unique identifier of this entity.
     /// </summary>
-    public Guid Id { get; private init; }
+    public Guid Id { get; set; }
 
     public int Version { get; set; } = 0;
 

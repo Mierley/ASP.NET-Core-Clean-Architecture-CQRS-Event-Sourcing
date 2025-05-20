@@ -14,7 +14,11 @@ public class MiraSnapshotRepository : IMiraSnapshotRepository
 
     public void SaveSnapshotsAsync(IReadOnlyList<BaseEvent> domainEvents)
     {
-        var customer = domainEvents.Count == 0 ? new Customer() : GetLastSnapshot(domainEvents.FirstOrDefault()!.AggregateId);
+        var customer = domainEvents.Count == 0
+            ? new Customer()
+            : GetLastSnapshot(domainEvents.FirstOrDefault()!.AggregateId);
+        if (customer == null)
+            return;
         customer.Replay(domainEvents);
         CustomersSnapshots.Add(customer);
     }

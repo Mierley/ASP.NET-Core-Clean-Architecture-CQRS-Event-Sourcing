@@ -8,7 +8,6 @@ using MediatR;
 using Shop.Application.Customer.Commands;
 using Shop.Application.Query;
 using Shop.Core.SharedKernel;
-using Shop.Domain.Entities.CustomerAggregate;
 using Shop.Domain.ValueObjects;
 
 namespace Shop.Application.Customer.Handlers;

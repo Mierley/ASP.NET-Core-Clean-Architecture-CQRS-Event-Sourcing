@@ -22,7 +22,7 @@ internal class MiraCustomerReadOnlyRepository(
     {
         //берём последний снепшот
         var snapshot = miraSnapshotRepository.GetLastSnapshot(customerId);
-        var lastVersion = snapshot?.Version ?? 0;
+        var lastVersion = snapshot?.Version ?? -1;
 
         //новые события после снепшота
         var events = (await miraEventStore.LoadEventsAsync(customerId, lastVersion)).ToList();
