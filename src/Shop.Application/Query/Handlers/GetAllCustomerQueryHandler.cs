@@ -3,25 +3,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using Ardalis.Result;
 using MediatR;
-using Shop.Core.SharedKernel;
-using Shop.Query.Application.Customer.Queries;
-using Shop.Query.Data.Repositories.Abstractions;
-using Shop.Query.QueriesModel;
+using Shop.Application.Query.Queries;
 
-namespace Shop.Query.Application.Customer.Handlers;
+namespace Shop.Application.Query.Handlers;
 
 public class GetAllCustomerQueryHandler(IMiraCustomerReadOnlyRepository repository)
-    : IRequestHandler<GetAllCustomerQuery, Result<IEnumerable<CustomerQueryModel>>>
+    : IRequestHandler<GetAllCustomerQuery, Result<IEnumerable<Domain.Entities.CustomerAggregate.Customer>>>
 {
-    private const string CacheKey = nameof(GetAllCustomerQuery);
 
-    public async Task<Result<IEnumerable<CustomerQueryModel>>> Handle(
+    public async Task<Result<IEnumerable<Domain.Entities.CustomerAggregate.Customer>>> Handle(
           GetAllCustomerQuery request,
           CancellationToken cancellationToken)
     {
         // This method will either return the cached data associated with the CacheKey
         // or create it by calling the GetAllAsync method.
-        return Result<IEnumerable<CustomerQueryModel>>.Success(
+        return Result<IEnumerable<Domain.Entities.CustomerAggregate.Customer>>.Success(
             await repository.GetAllAsync());
     }
 }

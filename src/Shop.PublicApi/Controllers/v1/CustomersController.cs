@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shop.Application.Customer.Commands;
 using Shop.Application.Customer.Responses;
+using Shop.Application.Query.Queries;
+using Shop.Domain.Entities.CustomerAggregate;
 using Shop.PublicApi.Extensions;
 using Shop.PublicApi.Models;
-using Shop.Query.Application.Customer.Queries;
-using Shop.Query.QueriesModel;
 
-namespace Shop.PublicApi.Controllers.V1;
+namespace Shop.PublicApi.Controllers.v1;
 
 [ApiController]
 [ApiVersion("1.0")]
@@ -61,26 +61,6 @@ public class CustomersController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> Update([FromBody][Required] UpdateCustomerCommand command) =>
         (await mediator.Send(command)).ToActionResult();
 
-    //////////////////////////////
-    // DELETE: /api/customers/{id}
-    //////////////////////////////
-
-    /// <summary>
-    /// Deletes the client by Id.
-    /// </summary>
-    /// <response code="200">Returns the response with the success message.</response>
-    /// <response code="400">Returns list of errors if the request is invalid.</response>
-    /// <response code="404">When no client is found by the given Id.</response>
-    /// <response code="500">When an unexpected internal error occurs on the server.</response>
-    [HttpDelete("{id:guid}")]
-    [Consumes(MediaTypeNames.Application.Json)]
-    [Produces(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Delete([Required] Guid id) =>
-        (await mediator.Send(new DeleteCustomerCommand(id))).ToActionResult();
 
     ///////////////////////////
     // GET: /api/customers/{id}
@@ -96,7 +76,7 @@ public class CustomersController(IMediator mediator) : ControllerBase
     [HttpGet("{id:guid}")]
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(ApiResponse<CustomerQueryModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<Customer>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
@@ -115,7 +95,7 @@ public class CustomersController(IMediator mediator) : ControllerBase
     [HttpGet]
     [Consumes(MediaTypeNames.Application.Json)]
     [Produces(MediaTypeNames.Application.Json)]
-    [ProducesResponseType(typeof(ApiResponse<IEnumerable<CustomerQueryModel>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<Customer>>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAll() =>
         (await mediator.Send(new GetAllCustomerQuery())).ToActionResult();

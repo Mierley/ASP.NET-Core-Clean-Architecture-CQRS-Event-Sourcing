@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
-using System.Collections.Concurrent;
+
+namespace ConsoleApp3;
 
 /// dotnet run -- 200 32
 ///   200  – сколько кастомеров
@@ -13,8 +14,8 @@ internal class Program
     {
         int total = args.Length > 0 && int.TryParse(args[0], out var n) ? n : CustomerCount;
         int degree = args.Length > 1 && int.TryParse(args[1], out var d)
-                        ? d
-                        : 5;
+            ? d
+            : 5;
 
         string baseUrl = Environment.GetEnvironmentVariable("CUSTOMER_API")
                          ?? "http://localhost:80";

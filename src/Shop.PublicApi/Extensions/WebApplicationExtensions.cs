@@ -1,13 +1,8 @@
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Shop.Infrastructure.Data.Context;
-using Shop.Query.Abstractions;
 
 namespace Shop.PublicApi.Extensions;
 

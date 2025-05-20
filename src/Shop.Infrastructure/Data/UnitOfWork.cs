@@ -4,104 +4,37 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shop.Core.Extensions;
 using Shop.Core.SharedKernel;
 using Shop.Domain;
-using Shop.Infrastructure.Data.Context;
+using Shop.Domain.Entities.CustomerAggregate;
 
 namespace Shop.Infrastructure.Data;
 
 internal sealed class UnitOfWork(
-    WriteDbContext writeDbContext,
     IMiraEventStore miraEventStore,
     IMiraSnapshotRepository miraSnapshotRepository,
-    IMediator mediator,
     ILogger<UnitOfWork> logger) : IUnitOfWork
 {
-
     /// <summary>
     /// Saves changes asynchronously.
     /// </summary>
-    public async Task SaveChangesAsync()
+    public async Task SaveChangesAsync(BaseEntity entity)
     {
-        // Creating the execution strategy (Connection resiliency and database retries).
-        var strategy = writeDbContext.Database.CreateExecutionStrategy();
-
-        // Executing the strategy.
-        await strategy.ExecuteAsync(async () =>
+        try
         {
-            await using var transaction =
-                await writeDbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
-
-            logger.LogInformation("----- Begin transaction: '{TransactionId}'", transaction.TransactionId);
-
-            try
-            {
-                // Getting the domain events and event stores from the tracked entities in the EF Core context.
-                //var (domainEvents, eventStores) = BeforeSaveChanges();
-                var domainEvents = CollectDomainEvents();
-
-                //var rowsAffected = await writeDbContext.SaveChangesAsync();
-
-                logger.LogInformation("----- Commit transaction: '{TransactionId}'", transaction.TransactionId);
-
-                await transaction.CommitAsync();
-
-                // Triggering the events and saving the stores.
-                //await AfterSaveChangesAsync(domainEvents, eventStores);
-                await PublishAndPersistAsync(domainEvents);
-
-                logger.LogInformation(
-                    "----- Transaction successfully confirmed: '{TransactionId}', Rows Affected: {RowsAffected}",
-                    transaction.TransactionId,
-                    0);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(
-                    ex,
-                    "An unexpected exception occurred while committing the transaction: '{TransactionId}', message: {Message}",
-                    transaction.TransactionId,
-                    ex.Message);
-
-                await transaction.RollbackAsync();
-
-                throw;
-            }
-        });
+            var domainEvents = entity.DomainEvents.ToList();
+            await SaveEventsAsync(domainEvents);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "An unexpected exception occurred while saving events");
+            throw;
+        }
     }
 
-    /// <summary>
-    /// Executes logic before saving changes to the database.
-    /// </summary>
-    /// <returns>A tuple containing the list of domain events and event stores.</returns>
-    //private (IReadOnlyList<BaseEvent> domainEvents, IReadOnlyList<EventStore_> eventStores) BeforeSaveChanges()
-    private IReadOnlyList<BaseEvent> CollectDomainEvents()
-    {
-        // Get all domain entities with pending domain events
-        var domainEntities = writeDbContext
-            .ChangeTracker
-            .Entries<BaseEntity>()
-            .Where(entry => entry.Entity.DomainEvents.Any())
-            .ToList();
-
-        // Get all domain events from the domain entities
-        var domainEvents = domainEntities
-            .SelectMany(entry => entry.Entity.DomainEvents)
-            .ToList();
-
-        // Convert domain events to event stores
-        var eventStores = domainEvents
-            .ConvertAll(@event => new EventStore_(@event.AggregateId, @event.GetGenericTypeName(), @event.ToJson()));
-
-        // Clear domain events from the entities
-        domainEntities.ForEach(entry => entry.Entity.ClearDomainEvents());
-
-        //return (domainEvents.AsReadOnly(), eventStores.AsReadOnly());
-        return domainEvents.AsReadOnly();
-    }
 
     /// <summary>
     /// Performs necessary actions after saving changes, such as publishing domain events and storing event stores.
@@ -109,20 +42,15 @@ internal sealed class UnitOfWork(
     /// <param name="domainEvents">The list of domain events.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     //private async Task AfterSaveChangesAsync(IReadOnlyList<BaseEvent> domainEvents, IReadOnlyList<EventStore_> eventStores)
-    private async Task PublishAndPersistAsync(IReadOnlyList<BaseEvent> domainEvents)
+    private async Task SaveEventsAsync(IReadOnlyList<BaseEvent> domainEvents)
     {
-        // Publish each domain event using _mediator.
-        if (domainEvents.Count > 0)
-            await Task.WhenAll(domainEvents.Select(@event => mediator.Publish(@event)));
-
         // 2. Persist to EventStoreDB – группируем по AggregateId
         foreach (var grp in domainEvents.GroupBy(e => e.AggregateId))
         {
             await miraEventStore.SaveEventsAsync(grp.Key, grp);
 
-            if(grp.LastOrDefault().Version % 5 == 0)
+            if (grp.LastOrDefault().Version % 5 == 0)
                 miraSnapshotRepository.SaveSnapshotsAsync(domainEvents);
-
         }
     }
 
@@ -150,7 +78,6 @@ internal sealed class UnitOfWork(
         // Dispose managed state (managed objects).
         if (disposing)
         {
-            writeDbContext.Dispose();
             //eventStoreRepository.Dispose();
         }
 

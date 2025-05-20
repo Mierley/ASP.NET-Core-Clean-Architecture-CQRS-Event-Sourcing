@@ -92,10 +92,10 @@ public class Customer : BaseEntity, IAggregateRoot
     public void Replay(IEnumerable<BaseEvent> events)
     {
         events = events.ToList().OrderBy(baseEvent => baseEvent.Version);
-        foreach (var e in events) When(e);        // (если Version нужен)
+        foreach (var e in events) Apply(e);        // (если Version нужен)
     }
 
-    private void When(BaseEvent e)
+    private void Apply(BaseEvent e)
     {
         switch (e)
         {

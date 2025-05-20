@@ -17,11 +17,11 @@ using Microsoft.Extensions.Hosting;
 using OwaspHeaders.Core.Extensions;
 using Scalar.AspNetCore;
 using Shop.Application;
+using Shop.Application.Query;
 using Shop.Core;
 using Shop.Core.Extensions;
 using Shop.Infrastructure;
 using Shop.PublicApi.Extensions;
-using Shop.Query;
 using StackExchange.Profiling;
 
 var builder = WebApplication.CreateBuilder(args);

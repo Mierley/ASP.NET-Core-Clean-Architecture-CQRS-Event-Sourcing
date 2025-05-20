@@ -10,8 +10,7 @@ public static class ConfigureServices
 {
     public static IServiceCollection ConfigureAppSettings(this IServiceCollection services) =>
         services
-            .AddOptionsWithValidation<ConnectionOptions>()
-            .AddOptionsWithValidation<CacheOptions>();
+            .AddOptionsWithValidation<ConnectionOptions>();
 
     /// <summary>
     /// Adds options with validation to the service collection.

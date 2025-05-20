@@ -4,18 +4,15 @@ using Ardalis.Result;
 using Ardalis.Result.FluentValidation;
 using FluentValidation;
 using MediatR;
-using Shop.Core.SharedKernel;
-using Shop.Query.Application.Customer.Queries;
-using Shop.Query.Data.Repositories.Abstractions;
-using Shop.Query.QueriesModel;
+using Shop.Application.Query.Queries;
 
-namespace Shop.Query.Application.Customer.Handlers;
+namespace Shop.Application.Query.Handlers;
 
 public class GetCustomerByIdQueryHandler(
     IValidator<GetCustomerByIdQuery> validator,
-    IMiraCustomerReadOnlyRepository repository) : IRequestHandler<GetCustomerByIdQuery, Result<CustomerQueryModel>>
+    IMiraCustomerReadOnlyRepository repository) : IRequestHandler<GetCustomerByIdQuery, Result<Domain.Entities.CustomerAggregate.Customer>>
 {
-    public async Task<Result<CustomerQueryModel>> Handle(
+    public async Task<Result<Domain.Entities.CustomerAggregate.Customer>> Handle(
         GetCustomerByIdQuery request,
         CancellationToken cancellationToken)
     {
@@ -24,7 +21,7 @@ public class GetCustomerByIdQueryHandler(
         if (!validationResult.IsValid)
         {
             // Returns the result with validation errors.
-            return Result<CustomerQueryModel>.Invalid(validationResult.AsErrors());
+            return Result<Domain.Entities.CustomerAggregate.Customer>.Invalid(validationResult.AsErrors());
         }
 
         return await repository.GetByIdAsync(request.Id);

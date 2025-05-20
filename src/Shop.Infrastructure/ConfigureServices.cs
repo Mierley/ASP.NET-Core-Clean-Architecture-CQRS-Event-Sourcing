@@ -1,11 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using EventStore.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Shop.Core.SharedKernel;
 using Shop.Domain;
-using Shop.Domain.Entities.CustomerAggregate;
 using Shop.Infrastructure.Data;
-using Shop.Infrastructure.Data.Context;
 using Shop.Infrastructure.Data.EventStore;
 using Shop.Infrastructure.Data.Repositories;
 
@@ -22,9 +19,7 @@ public static class ConfigureServices
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
         services
-            .AddScoped<IMiraEventStore, MiraEventStoreDbRepository>() // твоя реализация
-            .AddScoped<WriteDbContext>()
-            .AddScoped<EventStoreDbContext>()
+            .AddScoped<IMiraEventStore, MiraEventStoreDbRepository>() // моя реализация
             .AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
@@ -37,7 +32,5 @@ public static class ConfigureServices
     /// <param name="services">The service collection.</param>
     public static IServiceCollection AddWriteOnlyRepositories(this IServiceCollection services) =>
          services
-            .AddScoped<IEventStoreRepository, EventStoreRepository>()
-            .AddSingleton<IMiraSnapshotRepository, MiraSnapshotRepository>()
-            .AddScoped<ICustomerWriteOnlyRepository, CustomerWriteOnlyRepository>();
+            .AddSingleton<IMiraSnapshotRepository, MiraSnapshotRepository>();
 }

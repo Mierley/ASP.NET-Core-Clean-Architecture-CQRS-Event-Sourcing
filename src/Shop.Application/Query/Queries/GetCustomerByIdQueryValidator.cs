@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Shop.Query.Application.Customer.Queries;
+namespace Shop.Application.Query.Queries;
 
 public class GetCustomerByIdQueryValidator : AbstractValidator<GetCustomerByIdQuery>
 {
