@@ -6,7 +6,8 @@ using Shop.Query.QueriesModel;
 
 namespace Shop.Query.Data.Repositories.Abstractions;
 
-public interface ICustomerReadOnlyRepository : IReadOnlyRepository<CustomerQueryModel, Guid>
+public interface IMiraCustomerReadOnlyRepository
 {
     Task<IEnumerable<CustomerQueryModel>> GetAllAsync();
+    Task<CustomerQueryModel> GetByIdAsync(Guid id);
 }

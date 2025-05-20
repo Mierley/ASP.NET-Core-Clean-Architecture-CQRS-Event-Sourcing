@@ -22,7 +22,7 @@ public static class ConfigureServices
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
         services
-            .AddScoped<IEventStore, EventStoreDbRepository>() // твоя реализация
+            .AddScoped<IMiraEventStore, MiraEventStoreDbRepository>() // твоя реализация
             .AddScoped<WriteDbContext>()
             .AddScoped<EventStoreDbContext>()
             .AddScoped<IUnitOfWork, UnitOfWork>();
@@ -38,6 +38,6 @@ public static class ConfigureServices
     public static IServiceCollection AddWriteOnlyRepositories(this IServiceCollection services) =>
          services
             .AddScoped<IEventStoreRepository, EventStoreRepository>()
-            .AddSingleton<ISnapshotRepository, SnapshotRepository>()
+            .AddSingleton<IMiraSnapshotRepository, MiraSnapshotRepository>()
             .AddScoped<ICustomerWriteOnlyRepository, CustomerWriteOnlyRepository>();
 }

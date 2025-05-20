@@ -13,7 +13,7 @@ namespace Shop.Query.Application.Customer.Handlers;
 
 public class GetCustomerByIdQueryHandler(
     IValidator<GetCustomerByIdQuery> validator,
-    ICustomerReadOnlyRepository repository) : IRequestHandler<GetCustomerByIdQuery, Result<CustomerQueryModel>>
+    IMiraCustomerReadOnlyRepository repository) : IRequestHandler<GetCustomerByIdQuery, Result<CustomerQueryModel>>
 {
     public async Task<Result<CustomerQueryModel>> Handle(
         GetCustomerByIdQuery request,

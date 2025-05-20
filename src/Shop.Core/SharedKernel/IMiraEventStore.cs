@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Shop.Core.SharedKernel;
 
-public interface IEventStore
+public interface IMiraEventStore
 {
     public Task SaveEventsAsync(Guid aggregateId, IEnumerable<BaseEvent> events, string streamName = null);
 

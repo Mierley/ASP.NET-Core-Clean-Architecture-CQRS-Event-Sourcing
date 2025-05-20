@@ -8,7 +8,7 @@ using Shop.Domain.Entities.CustomerAggregate;
 
 namespace Shop.Infrastructure.Data.Repositories;
 
-public class SnapshotRepository : ISnapshotRepository
+public class MiraSnapshotRepository : IMiraSnapshotRepository
 {
     private static readonly IList<Customer> CustomersSnapshots = new List<Customer>();
 

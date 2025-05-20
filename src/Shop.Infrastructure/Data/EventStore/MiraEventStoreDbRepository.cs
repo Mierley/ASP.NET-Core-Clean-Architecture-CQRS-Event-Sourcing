@@ -9,11 +9,11 @@ using Shop.Core.SharedKernel;
 
 namespace Shop.Infrastructure.Data.EventStore;
 
-public class EventStoreDbRepository : IEventStore
+public class MiraEventStoreDbRepository : IMiraEventStore
 {
     private readonly EventStoreClient _client;
 
-    public EventStoreDbRepository(EventStoreClient client)
+    public MiraEventStoreDbRepository(EventStoreClient client)
     {
         _client = client;
     }

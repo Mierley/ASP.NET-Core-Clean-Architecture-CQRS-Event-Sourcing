@@ -66,12 +66,9 @@ builder.Services
     .AddInfrastructure()
     .AddCommandHandlers()
     .AddQueryHandlers()
-    .AddWriteDbContext(builder.Environment)
     .AddWriteOnlyRepositories()
-    .AddReadDbContext()
     .AddReadOnlyRepositories()
     .AddEventStoreDbClientService(builder.Configuration)
-    .AddHealthChecks(builder.Configuration)
     .AddDefaultCorrelationId();
 
 // MiniProfiler for .NET

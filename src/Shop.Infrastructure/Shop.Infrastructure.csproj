@@ -48,8 +48,4 @@
     <InternalsVisibleTo Include="Shop.UnitTests" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Folder Include="Data\Services\" />
-  </ItemGroup>
-  
 </Project>

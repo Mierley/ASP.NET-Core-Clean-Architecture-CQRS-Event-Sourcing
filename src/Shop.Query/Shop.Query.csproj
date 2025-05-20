@@ -47,4 +47,8 @@
     <InternalsVisibleTo Include="Shop.UnitTests" />
   </ItemGroup>
   
+  <ItemGroup>
+    <Folder Include="Data\Context\" />
+  </ItemGroup>
+  
 </Project>

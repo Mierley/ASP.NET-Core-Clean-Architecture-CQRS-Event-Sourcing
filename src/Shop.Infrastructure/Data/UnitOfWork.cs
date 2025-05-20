@@ -15,8 +15,8 @@ namespace Shop.Infrastructure.Data;
 
 internal sealed class UnitOfWork(
     WriteDbContext writeDbContext,
-    IEventStore eventStore,
-    ISnapshotRepository snapshotRepository,
+    IMiraEventStore miraEventStore,
+    IMiraSnapshotRepository miraSnapshotRepository,
     IMediator mediator,
     ILogger<UnitOfWork> logger) : IUnitOfWork
 {
@@ -118,10 +118,10 @@ internal sealed class UnitOfWork(
         // 2. Persist to EventStoreDB – группируем по AggregateId
         foreach (var grp in domainEvents.GroupBy(e => e.AggregateId))
         {
-            await eventStore.SaveEventsAsync(grp.Key, grp);
+            await miraEventStore.SaveEventsAsync(grp.Key, grp);
 
             if(grp.LastOrDefault().Version % 5 == 0)
-                snapshotRepository.SaveSnapshotsAsync(domainEvents);
+                miraSnapshotRepository.SaveSnapshotsAsync(domainEvents);
 
         }
     }
