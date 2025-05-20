@@ -14,7 +14,7 @@ public class SnapshotRepository : ISnapshotRepository
 
     public void SaveSnapshotsAsync(IReadOnlyList<BaseEvent> domainEvents)
     {
-        var customer = new Customer();
+        var customer = domainEvents.Count == 0 ? new Customer() : GetLastSnapshot(domainEvents.FirstOrDefault()!.AggregateId);
         customer.Replay(domainEvents);
         CustomersSnapshots.Add(customer);
     }
