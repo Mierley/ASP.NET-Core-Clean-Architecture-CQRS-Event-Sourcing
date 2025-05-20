@@ -8,26 +8,12 @@ using Shop.Infrastructure.Data;
 using Shop.Infrastructure.Data.Context;
 using Shop.Infrastructure.Data.EventStore;
 using Shop.Infrastructure.Data.Repositories;
-using Shop.Infrastructure.Data.Services;
 
 namespace Shop.Infrastructure;
 
 [ExcludeFromCodeCoverage]
 public static class ConfigureServices
 {
-    /// <summary>
-    /// Adds the memory cache service to the service collection.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    public static void AddMemoryCacheService(this IServiceCollection services) =>
-        services.AddScoped<ICacheService, MemoryCacheService>();
-
-    /// <summary>
-    /// Adds the distributed cache service to the service collection.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    public static void AddDistributedCacheService(this IServiceCollection services) =>
-        services.AddScoped<ICacheService, DistributedCacheService>();
 
     /// <summary>
     /// Adds the infrastructure services to the service collection.

@@ -70,7 +70,6 @@ builder.Services
     .AddWriteOnlyRepositories()
     .AddReadDbContext()
     .AddReadOnlyRepositories()
-    .AddCacheService(builder.Configuration)
     .AddEventStoreDbClientService(builder.Configuration)
     .AddHealthChecks(builder.Configuration)
     .AddDefaultCorrelationId();

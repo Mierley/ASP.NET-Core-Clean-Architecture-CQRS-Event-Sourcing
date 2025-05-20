@@ -10,7 +10,7 @@ using Shop.Query.QueriesModel;
 
 namespace Shop.Query.Application.Customer.Handlers;
 
-public class GetAllCustomerQueryHandler(ICustomerReadOnlyRepository repository, ICacheService cacheService)
+public class GetAllCustomerQueryHandler(ICustomerReadOnlyRepository repository)
     : IRequestHandler<GetAllCustomerQuery, Result<IEnumerable<CustomerQueryModel>>>
 {
     private const string CacheKey = nameof(GetAllCustomerQuery);
@@ -22,6 +22,6 @@ public class GetAllCustomerQueryHandler(ICustomerReadOnlyRepository repository, 
         // This method will either return the cached data associated with the CacheKey
         // or create it by calling the GetAllAsync method.
         return Result<IEnumerable<CustomerQueryModel>>.Success(
-            await cacheService.GetOrCreateAsync(CacheKey, repository.GetAllAsync));
+            await repository.GetAllAsync());
     }
 }
