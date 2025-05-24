@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using Eventuous;
+using Eventuous.EventStore;
 using Microsoft.Extensions.DependencyInjection;
 using Shop.Core.SharedKernel;
-using Shop.Domain;
 using Shop.Infrastructure.Data;
 using Shop.Infrastructure.Data.EventStore;
-using Shop.Infrastructure.Data.Repositories;
 
 namespace Shop.Infrastructure;
 
@@ -19,7 +19,10 @@ public static class ConfigureServices
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
         services
-            .AddScoped<IMiraEventStore, MiraEventStoreDbRepository>() // моя реализация
+            .AddSingleton<IMiraEventStore, MiraEventStoreEventuous>()
+            .AddSingleton<IEventStore, EsdbEventStore>()
+            .AddEventStoreClient("esdb://localhost:2113?tls=false")
+            //.AddScoped<IMiraEventStore, MiraEventStoreDbRepository>() // моя реализация
             .AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
@@ -31,6 +34,6 @@ public static class ConfigureServices
     /// </summary>
     /// <param name="services">The service collection.</param>
     public static IServiceCollection AddWriteOnlyRepositories(this IServiceCollection services) =>
-         services
-            .AddSingleton<IMiraSnapshotRepository, MiraSnapshotRepository>();
+        services;
+    //.AddSingleton<IMiraSnapshotRepository, MiraSnapshotRepository>();
 }

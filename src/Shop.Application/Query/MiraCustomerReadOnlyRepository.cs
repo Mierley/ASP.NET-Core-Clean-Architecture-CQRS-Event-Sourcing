@@ -2,36 +2,37 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Shop.Core.SharedKernel;
 using Shop.Domain;
 
 namespace Shop.Application.Query;
 
-internal class MiraCustomerReadOnlyRepository(
-    IMiraEventStore miraEventStore,
-    IMiraSnapshotRepository miraSnapshotRepository)
+internal class MiraCustomerReadOnlyRepository()
     : IMiraCustomerReadOnlyRepository
 {
+    private static readonly List<Domain.Entities.CustomerAggregate.Customer> _customers = new List<Domain.Entities.CustomerAggregate.Customer>();
     public Task<IEnumerable<Domain.Entities.CustomerAggregate.Customer>> GetAllAsync()
     {
-        //todo-z Надо ли как-то получать все записи?
-        throw new NotImplementedException();
+        return Task.FromResult(_customers.AsEnumerable());
     }
 
-    public async Task<Domain.Entities.CustomerAggregate.Customer> GetByIdAsync(Guid customerId)
+    public Task<Domain.Entities.CustomerAggregate.Customer> GetByIdAsync(Guid customerId)
     {
-        //берём последний снепшот
-        var snapshot = miraSnapshotRepository.GetLastSnapshot(customerId);
-        var lastVersion = snapshot?.Version ?? -1;
+        return Task.FromResult(_customers.FirstOrDefault(x => x.Id == customerId));
+    }
 
-        //новые события после снепшота
-        var events = (await miraEventStore.LoadEventsAsync(customerId, lastVersion)).ToList();
-
-        var customer = snapshot ?? new Domain.Entities.CustomerAggregate.Customer(); // пустой экземпляр
-
-        if (events.Any())
-            customer.Replay(events); // восстанавливаем состояние
-
-        return customer;
+    public void AddOrUpdateCustomerProjection(Domain.Entities.CustomerAggregate.Customer customer)
+    {
+        var existing = _customers.FirstOrDefault(x => x.Id == customer.Id);
+        if (existing == null)
+        {
+            _customers.Add(customer);
+            Console.WriteLine($"Added Customer: {customer.Id}, count {_customers.Count}");
+        }
+        else
+        {
+            existing.ChangeEmail(customer.Email, false);
+        }
     }
 }

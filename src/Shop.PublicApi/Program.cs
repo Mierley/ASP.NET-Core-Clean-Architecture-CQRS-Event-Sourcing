@@ -3,11 +3,13 @@ using System.IO.Compression;
 using Asp.Versioning;
 using CorrelationId;
 using CorrelationId.DependencyInjection;
+using EventStore.Client;
+using Eventuous;
+using Eventuous.EventStore.Subscriptions;
+using Eventuous.Subscriptions.Checkpoints;
 using FluentValidation;
 using FluentValidation.Resources;
-using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -23,6 +25,7 @@ using Shop.Core.Extensions;
 using Shop.Infrastructure;
 using Shop.PublicApi.Extensions;
 using StackExchange.Profiling;
+using Shop.Infrastructure.Data.EventStore; // Added for BookingStateProjection
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +62,8 @@ builder.Services.AddControllers()
         behaviorOptions.SuppressModelStateInvalidFilter = true;
     })
     .AddJsonOptions(_ => { });
+//для регистрации событий при подписке на них
+TypeMap.RegisterKnownEventTypes();
 
 // Adding the application services in ASP.NET Core DI.
 builder.Services
@@ -69,7 +74,33 @@ builder.Services
     .AddWriteOnlyRepositories()
     .AddReadOnlyRepositories()
     .AddEventStoreDbClientService(builder.Configuration)
-    .AddDefaultCorrelationId();
+    .AddDefaultCorrelationId()
+    // Updated the subscription to use NoOpCheckpointStore for catch-up behavior.
+    .AddSubscription<AllStreamSubscription, AllStreamSubscriptionOptions>(
+        "CrossAggregateIntegration",
+        b => b
+            // RAM-чек-пойнт (замените, когда понадобится durable)
+            .UseCheckpointStore<NoOpCheckpointStore>()
+            .Configure(cfg => {
+                cfg.EventFilter = StreamFilter.Prefix("Aggregate-");   // слушаем ВСЕ стримы, начинающиеся с Aggregate-
+                // cfg.EventFilter = StreamFilter.Regex("^Booking-");   // или regex
+                cfg.ResolveLinkTos = false;                            // если пишете напрямую, а не через linkTo
+            })
+            .AddEventHandler<MiraEventsHandler>());
+    /*
+    .AddSubscription<StreamSubscription, StreamSubscriptionOptions>(
+        "BookingsStateProjections",
+        b => b
+            .UseCheckpointStore<NoOpCheckpointStore>()
+            .Configure(cfg => {
+                cfg.StreamName = new StreamName($"Aggregate-{aggregateId}");
+                cfg.ResolveLinkTos = true;
+            })
+            .UseCheckpointStore<NoOpCheckpointStore>()
+            .AddEventHandler<MiraEventsHandler>());
+            */
+
+
 
 // MiniProfiler for .NET
 // https://miniprofiler.com/dotnet/

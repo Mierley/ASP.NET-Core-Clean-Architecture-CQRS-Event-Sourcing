@@ -1,7 +1,9 @@
 using System;
+using Eventuous;
 
 namespace Shop.Domain.Entities.CustomerAggregate.Events;
 
+[EventType("CustomerCreated")]
 public class CustomerCreatedEvent(
     Guid id,
     int version,

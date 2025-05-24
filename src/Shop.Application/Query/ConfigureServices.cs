@@ -26,7 +26,7 @@ public static class ConfigureServices
     /// </summary>
     /// <param name="services">The service collection.</param>
     public static IServiceCollection AddReadOnlyRepositories(this IServiceCollection services) =>
-        services.AddScoped<IMiraCustomerReadOnlyRepository, MiraCustomerReadOnlyRepository>();
+        services.AddSingleton<IMiraCustomerReadOnlyRepository, MiraCustomerReadOnlyRepository>();
 
 
 }

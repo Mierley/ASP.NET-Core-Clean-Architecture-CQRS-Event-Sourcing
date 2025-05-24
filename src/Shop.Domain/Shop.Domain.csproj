@@ -6,6 +6,7 @@
   
   <ItemGroup>
     <PackageReference Include="Ardalis.Result" />
+    <PackageReference Include="Eventuous.Shared" />
     <PackageReference Include="Roslynator.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

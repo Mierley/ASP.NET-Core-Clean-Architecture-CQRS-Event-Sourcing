@@ -1,19 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using Shop.Core.SharedKernel;
-using Shop.Domain;
-using Shop.Domain.Entities.CustomerAggregate;
 
 namespace Shop.Infrastructure.Data;
 
 internal sealed class UnitOfWork(
     IMiraEventStore miraEventStore,
-    IMiraSnapshotRepository miraSnapshotRepository,
     ILogger<UnitOfWork> logger) : IUnitOfWork
 {
     /// <summary>
@@ -48,9 +43,6 @@ internal sealed class UnitOfWork(
         foreach (var grp in domainEvents.GroupBy(e => e.AggregateId))
         {
             await miraEventStore.SaveEventsAsync(grp.Key, grp);
-
-            if (grp.LastOrDefault().Version % 5 == 0)
-                miraSnapshotRepository.SaveSnapshotsAsync(domainEvents);
         }
     }
 

@@ -7,7 +7,7 @@ namespace ConsoleApp3;
 ///   32   – (опц.) степень параллелизма
 internal class Program
 {
-    private const int CustomerCount = 160;
+    private const int CustomerCount = 120;
     private const int UpdatesPerCustomer = 120;
 
     private static async Task Main(string[] args)
@@ -65,6 +65,9 @@ internal class Program
                     return;
                 }
 
+                //////////////
+
+
                 Guid customerId = created.Result.Id;
                 Console.WriteLine($"[{idx}] CREATE OK  – {customerId}");
 
@@ -74,9 +77,11 @@ internal class Program
                         $"{customerId},{1 + UpdatesPerCustomer}{Environment.NewLine}");
                 }
 
+                await Task.Delay(TimeSpan.FromSeconds(2));
                 // 2. UPDATEs -------------------------
                 for (int u = 1; u <= UpdatesPerCustomer; u++)
                 {
+                    //await Task.Delay(1000);
                     var updateDto = new { id = customerId, email = $"{customerId}_v{u}@example.com" };
 
                     HttpResponseMessage updateResp =

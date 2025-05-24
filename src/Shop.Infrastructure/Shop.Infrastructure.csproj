@@ -6,6 +6,9 @@
   
   <ItemGroup>
     <PackageReference Include="EventStore.Client.Grpc.Streams" />
+    <PackageReference Include="Eventuous" />
+    <PackageReference Include="Eventuous.EventStore" />
+    <PackageReference Include="Eventuous.Subscriptions" />
     <PackageReference Include="MediatR" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
@@ -39,6 +42,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\Shop.Application\Shop.Application.csproj" />
     <ProjectReference Include="..\Shop.Core\Shop.Core.csproj" />
     <ProjectReference Include="..\Shop.Domain\Shop.Domain.csproj" />
   </ItemGroup>
@@ -46,6 +50,10 @@
   <ItemGroup>
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     <InternalsVisibleTo Include="Shop.UnitTests" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Data\Repositories\" />
   </ItemGroup>
   
 </Project>

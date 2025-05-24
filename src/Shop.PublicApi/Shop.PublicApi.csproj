@@ -63,6 +63,9 @@
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="System.Text.RegularExpressions" />
+    <PackageReference Include="Eventuous" />
+    <PackageReference Include="Eventuous.EventStore" />
+    <PackageReference Include="Eventuous.Subscriptions" />
   </ItemGroup>
 
   <ItemGroup>

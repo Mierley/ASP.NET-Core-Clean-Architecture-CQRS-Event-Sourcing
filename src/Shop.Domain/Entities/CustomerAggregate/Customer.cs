@@ -19,15 +19,17 @@ public class Customer : BaseEntity, IAggregateRoot
     /// <param name="gender">The gender of the customer.</param>
     /// <param name="email">The email address of the customer.</param>
     /// <param name="dateOfBirth">The date of birth of the customer.</param>
-    public Customer(string firstName, string lastName, EGender gender, Email email, DateTime dateOfBirth)
+    public Customer(string firstName, string lastName, EGender gender, Email email, DateTime dateOfBirth,
+        bool withEvent = true)
     {
         FirstName = firstName;
         LastName = lastName;
         Gender = gender;
         Email = email;
         DateOfBirth = dateOfBirth;
-
-        AddDomainEvent(new CustomerCreatedEvent(Id, Version + 1, firstName, lastName, gender, email.Address, dateOfBirth));
+        if (withEvent)
+            AddDomainEvent(new CustomerCreatedEvent(Id, Version + 1, firstName, lastName, gender, email.Address,
+                dateOfBirth));
     }
 
     /// <summary>
@@ -74,7 +76,8 @@ public class Customer : BaseEntity, IAggregateRoot
 
         Email = newEmail;
         if (withEvent)
-            AddDomainEvent(new CustomerUpdatedEvent(Id, Version + 1, FirstName, LastName, Gender, newEmail.Address, DateOfBirth));
+            AddDomainEvent(new CustomerUpdatedEvent(Id, Version + 1, FirstName, LastName, Gender, newEmail.Address,
+                DateOfBirth));
     }
 
     /// <summary>
@@ -87,12 +90,14 @@ public class Customer : BaseEntity, IAggregateRoot
         _isDeleted = true;
 
         if (withEvent)
-            AddDomainEvent(new CustomerDeletedEvent(Id, Version + 1, FirstName, LastName, Gender, Email.Address, DateOfBirth));
+            AddDomainEvent(new CustomerDeletedEvent(Id, Version + 1, FirstName, LastName, Gender, Email.Address,
+                DateOfBirth));
     }
-    public void Replay(IEnumerable<BaseEvent> events)
+
+    public void Replay(IEnumerable<CustomerBaseEvent> events)
     {
         events = events.ToList().OrderBy(baseEvent => baseEvent.Version);
-        foreach (var e in events) Apply(e);        // (если Version нужен)
+        foreach (var e in events) Apply(e); // (если Version нужен)
     }
 
     private void Apply(BaseEvent e)
