@@ -7,6 +7,7 @@ public abstract class CustomerBaseEvent : BaseEvent
 {
     protected CustomerBaseEvent(
         Guid id,
+        int version,
         string firstName,
         string lastName,
         EGender gender,
@@ -14,6 +15,7 @@ public abstract class CustomerBaseEvent : BaseEvent
         DateTime dateOfBirth)
     {
         Id = id;
+        Version = version;
         AggregateId = id;
         FirstName = firstName;
         LastName = lastName;

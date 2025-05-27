@@ -6,15 +6,15 @@ using Ardalis.Result.FluentValidation;
 using FluentValidation;
 using MediatR;
 using Shop.Application.Customer.Commands;
+using Shop.Application.Query;
 using Shop.Core.SharedKernel;
-using Shop.Domain.Entities.CustomerAggregate;
 using Shop.Domain.ValueObjects;
 
 namespace Shop.Application.Customer.Handlers;
 
 public class UpdateCustomerCommandHandler(
     IValidator<UpdateCustomerCommand> validator,
-    ICustomerWriteOnlyRepository repository,
+    IMiraCustomerReadOnlyRepository repository,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateCustomerCommand, Result>
 {
     public async Task<Result> Handle(UpdateCustomerCommand request, CancellationToken cancellationToken)
@@ -37,18 +37,12 @@ public class UpdateCustomerCommandHandler(
         if (!emailResult.IsSuccess)
             return Result.Error(new ErrorList(emailResult.Errors.ToArray()));
 
-        // Checking if there is already a customer with the email address.
-        if (await repository.ExistsByEmailAsync(emailResult.Value, customer.Id))
-            return Result.Error("The provided email address is already in use.");
 
         // Changing the email in the entity.
         customer.ChangeEmail(emailResult.Value);
 
-        // Updating the entity in the repository.
-        repository.Update(customer);
-
         // Saving the changes to the database and firing events.
-        await unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync(customer);
 
         // Returning the success message.
         return Result.SuccessWithMessage("Updated successfully!");

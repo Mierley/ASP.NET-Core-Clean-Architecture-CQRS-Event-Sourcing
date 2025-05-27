@@ -30,14 +30,19 @@ public abstract class BaseEntity : IEntity<Guid>
     /// <summary>
     /// Gets the unique identifier of this entity.
     /// </summary>
-    public Guid Id { get; private init; }
+    public Guid Id { get; set; }
+
+    public int Version { get; set; } = 0;
 
     /// <summary>
     /// Adds a domain event to the entity.
     /// </summary>
     /// <param name="domainEvent">The domain event to add.</param>
-    protected void AddDomainEvent(BaseEvent domainEvent) =>
+    protected void AddDomainEvent(BaseEvent domainEvent)
+    {
+        Version++;
         _domainEvents.Add(domainEvent);
+    }
 
     /// <summary>
     /// Clears all the domain events associated with this entity.

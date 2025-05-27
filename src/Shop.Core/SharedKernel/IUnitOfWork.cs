@@ -12,5 +12,5 @@ public interface IUnitOfWork : IDisposable
     /// Saves the changes made in the unit of work asynchronously.
     /// </summary>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task SaveChangesAsync();
+    Task SaveChangesAsync(BaseEntity customer);
 }
