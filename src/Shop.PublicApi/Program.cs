@@ -66,7 +66,6 @@ builder.Services
     .AddInfrastructure()
     .AddCommandHandlers()
     .AddQueryHandlers()
-    .AddWriteOnlyRepositories()
     .AddReadOnlyRepositories()
     .AddEventStoreDbClientService(builder.Configuration)
     .AddDefaultCorrelationId();

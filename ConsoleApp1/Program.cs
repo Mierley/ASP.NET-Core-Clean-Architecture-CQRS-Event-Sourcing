@@ -6,8 +6,8 @@ using System.Collections.Concurrent;
 ///   32   – (опц.) степень параллелизма
 internal class Program
 {
-    private const int CustomerCount = 160;
-    private const int UpdatesPerCustomer = 120;
+    private const int CustomerCount = 20;
+    private const int UpdatesPerCustomer = 1000;
 
     private static async Task Main(string[] args)
     {

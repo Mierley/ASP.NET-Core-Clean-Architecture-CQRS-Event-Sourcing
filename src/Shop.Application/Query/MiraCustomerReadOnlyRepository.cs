@@ -8,8 +8,7 @@ using Shop.Domain;
 namespace Shop.Application.Query;
 
 internal class MiraCustomerReadOnlyRepository(
-    IMiraEventStore miraEventStore,
-    IMiraSnapshotRepository miraSnapshotRepository)
+    IMiraEventStore miraEventStore)
     : IMiraCustomerReadOnlyRepository
 {
     public Task<IEnumerable<Domain.Entities.CustomerAggregate.Customer>> GetAllAsync()
@@ -20,17 +19,12 @@ internal class MiraCustomerReadOnlyRepository(
 
     public async Task<Domain.Entities.CustomerAggregate.Customer> GetByIdAsync(Guid customerId)
     {
-        //берём последний снепшот
-        var snapshot = miraSnapshotRepository.GetLastSnapshot(customerId);
-        var lastVersion = snapshot?.Version ?? -1;
+        //все-все события
+        var events = (await miraEventStore.LoadEventsAsync(customerId)).ToList();
+        if (events.Count == 0) return null;
 
-        //новые события после снепшота
-        var events = (await miraEventStore.LoadEventsAsync(customerId, lastVersion)).ToList();
-
-        var customer = snapshot ?? new Domain.Entities.CustomerAggregate.Customer(); // пустой экземпляр
-
-        if (events.Any())
-            customer.Replay(events); // восстанавливаем состояние
+        var customer = new Domain.Entities.CustomerAggregate.Customer();                 // пустой экземпляр
+        customer.Replay(events);              // восстанавливаем состояние
 
         return customer;
     }
