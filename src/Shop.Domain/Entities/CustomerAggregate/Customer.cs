@@ -89,15 +89,31 @@ public class Customer : BaseEntity, IAggregateRoot
         if (withEvent)
             AddDomainEvent(new CustomerDeletedEvent(Id, Version + 1, FirstName, LastName, Gender, Email.Address, DateOfBirth));
     }
+
+    public Customer RecoverFromSnapshot()
+    {
+        return new Customer()
+        {
+            Id = Id,
+            FirstName = FirstName,
+            LastName = LastName,
+            Gender = Gender,
+            Email = Email,
+            Version = (int)Version,
+            DateOfBirth = DateOfBirth,
+        };
+    }
     public void Replay(IEnumerable<BaseEvent> events)
     {
-        events = events.ToList().OrderBy(baseEvent => baseEvent.Version);
-        foreach (var e in events) Apply(e);        // (если Version нужен)
+        events = events.Where(e => e.Version > Version).ToList().OrderBy(baseEvent => baseEvent.Version);
+        foreach (var e in events) Apply(e);
+        Version = events.LastOrDefault().Version;
+        // (если Version нужен)
     }
 
-    private void Apply(BaseEvent e)
+    private void Apply(BaseEvent domainEvent)
     {
-        switch (e)
+        switch (domainEvent)
         {
             case CustomerCreatedEvent ev:
                 this.FirstName = ev.FirstName;
@@ -117,5 +133,7 @@ public class Customer : BaseEntity, IAggregateRoot
                 ChangeEmail(Email.Create(ev.Email), false);
                 break;
         }
+
+        AddDomainEvent(domainEvent);
     }
 }

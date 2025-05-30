@@ -44,14 +44,12 @@ internal sealed class UnitOfWork(
     //private async Task AfterSaveChangesAsync(IReadOnlyList<BaseEvent> domainEvents, IReadOnlyList<EventStore_> eventStores)
     private async Task SaveEventsAsync(IReadOnlyList<BaseEvent> domainEvents)
     {
-        // 2. Persist to EventStoreDB – группируем по AggregateId
-        foreach (var grp in domainEvents.GroupBy(e => e.AggregateId))
-        {
-            await miraEventStore.SaveEventsAsync(grp.Key, grp);
+        var newDomainEvent = domainEvents.MaxBy(e => e.Version);
+        //сохраняем только новое событие
+        await miraEventStore.SaveEventsAsync(newDomainEvent.AggregateId, [newDomainEvent]);
 
-            if (grp.LastOrDefault().Version % 5 == 0)
-                miraSnapshotRepository.SaveSnapshotsAsync(domainEvents);
-        }
+        if (newDomainEvent.Version % 5 == 0)
+            miraSnapshotRepository.SaveSnapshotsAsync(domainEvents);
     }
 
     #region IDisposable

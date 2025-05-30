@@ -7,15 +7,13 @@ namespace ConsoleApp3;
 ///   32   – (опц.) степень параллелизма
 internal class Program
 {
-    private const int CustomerCount = 160;
-    private const int UpdatesPerCustomer = 120;
+    private const int CustomerCount = 200;
+    private const int UpdatesPerCustomer = 1000;
 
     private static async Task Main(string[] args)
     {
-        int total = args.Length > 0 && int.TryParse(args[0], out var n) ? n : CustomerCount;
-        int degree = args.Length > 1 && int.TryParse(args[1], out var d)
-            ? d
-            : 5;
+        int total = CustomerCount;
+        int degree = 20;
 
         string baseUrl = Environment.GetEnvironmentVariable("CUSTOMER_API")
                          ?? "http://localhost:80";
@@ -23,7 +21,7 @@ internal class Program
         using var client = new HttpClient
         {
             BaseAddress = new Uri(baseUrl),
-            Timeout     = TimeSpan.FromMinutes(5)
+            Timeout     = TimeSpan.FromHours(5)
         };
 
         Console.WriteLine($"Seeding {total} customers × {UpdatesPerCustomer} updates " +
