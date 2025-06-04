@@ -18,8 +18,8 @@ internal sealed class UnitOfWork(
     {
         try
         {
-            var domainEvents = entity.DomainEvents.ToList();
-            await SaveEventsAsync(domainEvents);
+            var domainEvents = entity.DomainEvents.ToList().MaxBy(e => e.Version);
+            await SaveEventsAsync([domainEvents]);
         }
         catch (Exception ex)
         {

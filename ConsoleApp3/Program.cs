@@ -7,8 +7,8 @@ namespace ConsoleApp3;
 ///   32   – (опц.) степень параллелизма
 internal class Program
 {
-    private const int CustomerCount = 120;
-    private const int UpdatesPerCustomer = 120;
+    private const int CustomerCount = 100;
+    private const int UpdatesPerCustomer = 0;
 
     private static async Task Main(string[] args)
     {
@@ -77,7 +77,7 @@ internal class Program
                         $"{customerId},{1 + UpdatesPerCustomer}{Environment.NewLine}");
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(2));
+                //await Task.Delay(TimeSpan.FromSeconds(2));
                 // 2. UPDATEs -------------------------
                 for (int u = 1; u <= UpdatesPerCustomer; u++)
                 {
